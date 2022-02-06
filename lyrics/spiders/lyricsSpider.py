@@ -12,11 +12,9 @@ class LyricsSpider(Spider):
         base_url = self.start_urls[0] + '/estilos/'
         
         for genre in self.music_genres:
-            urls = [base_url + genre + '/artistas.html']
-
-            for url in urls:
-                request = Request(url=url, callback=self.artist_parse, meta={'genre': genre})
-                yield request
+            url = base_url + genre + '/artistas.html'
+            request = Request(url=url, callback=self.artist_parse, meta={'genre': genre})
+            yield request
     
     def artist_parse(self, response):
         artist_class = response.css('.home-artistas')
