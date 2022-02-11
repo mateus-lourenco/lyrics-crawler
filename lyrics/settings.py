@@ -7,11 +7,14 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'lyrics'
+BOT_NAME = 'lyricsbot'
 
 SPIDER_MODULES = ['lyrics.spiders']
 NEWSPIDER_MODULE = 'lyrics.spiders'
 
+MONGO_URI = 'localhost:27017'
+MONGO_DATABASE = 'local'
+MONGO_COLLECTION = 'lyrics'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'lyrics (+http://www.yourdomain.com)'
@@ -62,9 +65,9 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'lyrics.pipelines.LyricsPipeline': 300,
-#}
+ITEM_PIPELINES = {
+    'lyrics.pipelines.MongoPipeline': 300
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

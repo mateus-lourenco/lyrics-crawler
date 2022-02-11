@@ -6,13 +6,10 @@
 from scrapy import Item, Field
 
 
-class Genre(Item):
-        name = Field()
-        artist = scrapy{
-            'name': Field(),
-            'song': {
-                'title' : Field(),
-                'composer': Field(),
-                'lyric' : Field()
-            }
-        }
+class LyricsItem(Item):
+    genre = Field()
+    artist_name = Field()
+    song_name = Field()
+    composer = Field()
+    lyric = Field()
+

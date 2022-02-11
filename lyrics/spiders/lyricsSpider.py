@@ -1,6 +1,5 @@
 from scrapy import Request, Spider
-from lyrics.items import Genre
-import ipdb
+from lyrics.items import LyricsItem
 
 class LyricsSpider(Spider):
     name = 'lyricsSpider'
@@ -46,20 +45,14 @@ class LyricsSpider(Spider):
 
             composer = response.css('.letra-info_comp ::text').get()
 
-            genre = {
-                'name' : response.meta['genre'],
-                'artist' : 
-                {
-                    'name': artist_name, 
-                    'song' : 
-                    {
-                        'title' : lyric_title,
-                        'composer': composer,
-                        'lyric' : lyric
-                    }
-                }
+            item = {
+                'genre' : response.meta['genre'],
+                'artist_name': artist_name, 
+                'song_name' : lyric_title,
+                'composer': composer,
+                'lyric' : lyric
             }
 
-            yield Genre(genre)
+            yield LyricsItem(item)
 
         
