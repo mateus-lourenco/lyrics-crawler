@@ -1,5 +1,6 @@
 from scrapy import Request, Spider
 from lyrics.items import LyricsItem
+import ipdb
 
 class LyricsSpider(Spider):
     name = 'lyricsSpider'
@@ -8,51 +9,90 @@ class LyricsSpider(Spider):
     music_genres = ['axe', 'forro', 'samba']
 
     def parse(self, response):
+
         base_url = self.start_urls[0] + '/estilos/'
         
         for genre in self.music_genres:
-            url = base_url + genre + '/artistas.html'
+            url = base_url + genre + '/todosartistas.html'
             request = Request(url=url, callback=self.artist_parse, meta={'genre': genre})
             yield request
     
     def artist_parse(self, response):
-        artist_class = response.css('.home-artistas')
-        artists_endpoints = artist_class.css('a::attr(href)').getall()
+
+        artists_endpoints = response.css('li a::attr(href)').getall()
         artist_page_urls = [self.start_urls[0] + i for i in artists_endpoints]
 
         for url in artist_page_urls:
-            yield Request(url=url, callback=self.songs_parse, meta={'genre': response.meta['genre']})
+            yield Request(url=url, callback=self.album_parse, meta={'genre': response.meta['genre']})
 
-    def songs_parse(self, response):
-        songs_selector = response.css('.cnt-list--alp')
-        songs_container = songs_selector.css('.list-container')
-        songs_endpoints = songs_container.css('a::attr(href)').getall()
-        songs_urls = [self.start_urls[0] + i for i in songs_endpoints]
-        
-        for url in songs_urls:
-            yield Request(url=url, callback=self.lyrics_parse, meta={'genre': response.meta['genre']}) 
-    
+    def album_parse(self, response):
+
+        albums_link = response.css('.artista-albuns h3 a::attr(href)').get()
+
+        if (albums_link is not None):
+
+            albums_endpoint = self.start_urls[0] + albums_link
+            
+            yield Request(url=albums_endpoint, callback=self.song_parse, meta={'genre': response.meta['genre']})
+
+    def song_parse(self, response):
+
+        dicography_selector = response.css('.discography-container')
+        albums_selector = dicography_selector.css("div[data-type='album']")
+
+        genre = {}
+        album = {}
+
+        for selector in albums_selector:
+
+            genre['name'] = response.meta['genre']
+            album_name = selector.css("h1 a::text").get()
+            album_year = selector.css(".header-info::text").get()
+            songs_urls = selector.css("li::attr(data-shareurl)").getall()
+
+            album['name'] = album_name
+            album['year'] = album_year
+
+            genre['album'] = album
+
+            for url in songs_urls:
+
+                url_parts = url.split("#")
+
+                yield Request(url=url_parts[0], callback=self.lyrics_parse, meta={'genre': genre}) 
+   
     def lyrics_parse(self, response):
-        translate = response.css('.letra-menu a ::attr(data-tt)').get()
-        if translate is None:
 
-            lyric_selector = response.css('.cnt-letra')
-            lyric = lyric_selector.css('p ::text').getall()
+        lyric_main = response.css('.letra-menu')
 
-            head_selector = response.css('.cnt-head_title')
-            lyric_title = head_selector.css('h1 ::text').get()
-            artist_name = head_selector.css('h2 span::text').get()
+        if lyric_main is not None: 
 
-            composer = response.css('.letra-info_comp ::text').get()
+            translate = lyric_main.css('a ::attr(data-tt)').get()
 
-            item = {
-                'genre' : response.meta['genre'],
-                'artist_name': artist_name, 
-                'song_name' : lyric_title,
-                'composer': composer,
-                'lyric' : lyric
-            }
+            if translate is None:
+            
+                item = None
 
-            yield LyricsItem(item)
+                head_selector = response.css('.cnt-head_title')
+                artist_name = head_selector.css('h2 span::text').get()
+
+                if artist_name is not None:
+
+                    lyric_title = head_selector.css('h1 ::text').get()
+                    lyric = response.css(".cnt-letra p::text").getall()
+
+                    composer = response.css('.letra-info_comp ::text').get()
+
+                    item = {
+                        'genre' : response.meta['genre']['name'],
+                        'artist_name': artist_name, 
+                        'album_name': response.meta['genre']['album']['name'],
+                        'album_year': response.meta['genre']['album']['year'],
+                        'song_name' : lyric_title,
+                        'composer': composer,
+                        'lyric' : lyric
+                    }
+
+                    yield LyricsItem(item)
 
         

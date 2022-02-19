@@ -9,6 +9,8 @@ from scrapy import Item, Field
 class LyricsItem(Item):
     genre = Field()
     artist_name = Field()
+    album_name = Field()
+    album_year = Field()
     song_name = Field()
     composer = Field()
     lyric = Field()
