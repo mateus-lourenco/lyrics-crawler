@@ -1,14 +1,31 @@
 ﻿# Lyrics crawler with Scrapy 🎵
 
-Generating a database to store songs lyrics for sentiment analysis
+webcrawler to generate a database to store songs lyrics for NLP and sentiment analysis
 
-## HOW TO RUN 🚀
+## How to run 🚀
 
-### Install MongoDB
+### Create a Python virtual enviroment 🐍
+```
+python -m virtualenv .venv
+```
+#### Linux 🐧
+```
+source .venv/bin/activate
+```
+#### Windows 🗔
+```
+.venv\Scripts\activate.exe
+```
+
+### Install MongoDB 🖥
 > install [mongodb](https://docs.mongodb.com/manual/installation/)
 
 ### Install all requirements 📰
-> pip install -r requirements.txt
+ ```
+ pip install -r requirements.txt
+ ```
 
 ### Run the Spider 🕷️
-> scrapy crawl lyricsSpider
+```
+scrapy crawl lyricsSpider
+```
