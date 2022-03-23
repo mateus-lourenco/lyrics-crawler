@@ -6,7 +6,7 @@ class LyricsSpider(Spider):
     name = 'lyricsSpider'
     allowed_domains = ['www.letras.mus.br']
     start_urls = ['https://www.letras.mus.br']
-    music_genres = ['axe', 'forro', 'samba']
+    music_genres = ['forro']
 
     def parse(self, response):
 
