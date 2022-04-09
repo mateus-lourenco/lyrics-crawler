@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from asyncore import write
 from pymongo import MongoClient, ASCENDING
-import json
+import csv
 
 if __name__ == '__main__':
     client = MongoClient('localhost', 27017)
@@ -9,23 +10,26 @@ if __name__ == '__main__':
     lyrics = db.lyrics
     cursor = lyrics.find({'genre.name':'forro'}).sort("genre.artist.album.year", ASCENDING)
     
-    def process_fields(song):
+    def process_fields(id, song):
         record = {
-            "title": song.title.strip(),
-            "artist": song.artist.strip(),
-            "composer": song.composer.strip(),
-            "album": song.album.strip(),
-            "album_year": int(song.album_year) if song.album_year is not "" else 0,
-            "lyric": ('').join(i + '\n' for i in song.lyric)
+            "id": id,
+            "title": song['title'].strip(),
+            "artist": song['artist'].strip() if song['artist'] != "" else "",
+            "composer": song['composer'].strip() if song['composer'] != "" else "",
+            "album": song['album'].strip(),
+            "year": int(song['year']) if song['year'] != "" else 0,
+            "lyric": (' ').join(i for i in song['lyric'])
         }
         
         return record
     
-    with open('lyrics_df.json', mode='w', encoding='utf-8') as file:
+    with open('lyrics.csv', mode='w', encoding='utf-8') as file:
+        header = ['id','title','artist','composer','album','year','lyric']
+        writer = csv.DictWriter(file, fieldnames=header, delimiter=';')
+        writer.writeheader()
+        
         count = 0
         _id = 1
-        
-        file.write('{ "dataset": [')
         
         for document in cursor:
             
@@ -34,25 +38,14 @@ if __name__ == '__main__':
                 "artist":       document["genre"]["artist"]["name"],
                 "composer":     document["genre"]["artist"]["album"]["song"]["composer"],
                 "album":        document["genre"]["artist"]["album"]["title"],      
-                "album_year":   document["genre"]["artist"]["album"]["year"],
+                "year":         document["genre"]["artist"]["album"]["year"],
                 "lyric":        document["genre"]["artist"]["album"]["song"]["lyric"]
             }
             
-            rec = process_fields(song)
-            
-            line = {'id': _id, "song": rec}
-            json.dump(
-                    line, 
-                    file, 
-                    ensure_ascii=False,
-                    indent=3)
-            
-            file.write(',')
-            file.write('\n')
+            rec = process_fields(_id, song)
+        
+            writer.writerow(rec)
             
             print(f'{count} documents processed')
             count+=1
             _id+=1
-        
-        file.write(']}')
-        

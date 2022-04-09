@@ -1,6 +1,5 @@
 from scrapy import Request, Spider
 from lyrics.items import LyricsItem
-import ipdb
 
 class LyricsSpider(Spider):
     name = 'lyricsSpider'
@@ -38,7 +37,7 @@ class LyricsSpider(Spider):
     def song_parse(self, response):
 
         dicography_selector = response.css('.discography-container')
-        albums_selector = dicography_selector.css("div[data-type='album']")
+        albums_selector = dicography_selector.css(".album-item")
 
         genre = {}
         album = {}
